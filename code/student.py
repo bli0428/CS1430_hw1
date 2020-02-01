@@ -30,6 +30,7 @@ def my_imfilter(image, kernel):
 
     ##################
     # Your code here #
+    kernel = np.fliplr(kernel)
     pad_y = int(np.floor((kernel_height - 1)/2))
     pad_x = int((np.floor(kernel_width - 1)/2))
     padded = None
@@ -134,7 +135,6 @@ def gen_hybrid_image(image1, image2, cutoff_frequency):
     # gen_hybrid_image().
     # One option is to clip (also called clamp) all values below 0.0 to 0.0, 
     # and all values larger than 1.0 to 1.0.
-    hybrid_image = np.clip(hybrid_image, 0.0, 1.0)
-    print(hybrid_image.shape)
+    hybrid_image = np.clip(hybrid_image, 0.0, 1.0) 
 
     return low_frequencies, high_frequencies, hybrid_image
