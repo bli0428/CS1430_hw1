@@ -23,9 +23,43 @@ def my_imfilter(image, kernel):
     """
     filtered_image = np.zeros(image.shape)
 
+    image_height = image.shape[0]
+    image_width = image.shape[1]
+    kernel_height = kernel.shape[0]
+    kernel_width = kernel.shape[1]
+
     ##################
     # Your code here #
-    print('my_imfilter function in student.py needs to be implemented')
+    pad_y = int(np.floor((kernel_height - 1)/2))
+    pad_x = int((np.floor(kernel_width - 1)/2))
+    padded = None
+    if len(image.shape) == 3:
+        padded = np.pad(image,((pad_y,pad_y),(pad_x,pad_x),(0,0)),'constant')
+    else:
+        padded = np.pad(image,((pad_y,pad_y),(pad_x,pad_x)),'constant')
+    if kernel_width % 2 == 0 or kernel_height % 2 == 0:
+        raise ValueError('Even filter detected')
+    for y in range(image_height):
+        for x in range(image_width):
+            if len(image.shape) == 3:
+                #image is colored
+                num_color_channels = image.shape[2]
+                for c in range(num_color_channels):
+                    kernel_size = kernel_height * kernel_width
+                    image_patch = padded[y:y+kernel_height, x:x + kernel_width, c:c+1]
+                    image_patch = np.reshape(image_patch, kernel_size)
+                    kernel_filter = np.reshape(kernel, kernel_size)
+                    total = np.dot(image_patch, kernel_filter)
+                    filtered_image[y,x,c] = total
+            else:
+                #image is grayscale
+                kernel_size = kernel_height * kernel_width
+                image_patch = padded[y:y+kernel_height, x:x + kernel_width]
+                image_patch = np.reshape(image_patch, kernel_size)
+                kernel_filter = np.reshape(kernel, kernel_size)
+                total = np.dot(image_patch, kernel_filter)
+                filtered_image[y,x] = total
+
     ##################
 
     return filtered_image
@@ -82,17 +116,17 @@ def gen_hybrid_image(image1, image2, cutoff_frequency):
     kernel = np.outer(probs, probs)
 
     # Your code here:
-    low_frequencies = np.zeros(image1.shape) # Replace with your implementation
+    low_frequencies = my_imfilter(image1, kernel)# Replace with your implementation
 
     # (2) Remove the low frequencies from image2. The easiest way to do this is to
     #     subtract a blurred version of image2 from the original version of image2.
     #     This will give you an image centered at zero with negative values.
     # Your code here #
-    high_frequencies = np.zeros(image1.shape) # Replace with your implementation
+    high_frequencies = image2 - my_imfilter(image2, kernel) # Replace with your implementation
 
     # (3) Combine the high frequencies and low frequencies
     # Your code here #
-    hybrid_image = np.zeros(image1.shape) # Replace with your implementation
+    hybrid_image = high_frequencies + low_frequencies # Replace with your implementation
 
     # (4) At this point, you need to be aware that values larger than 1.0
     # or less than 0.0 may cause issues in the functions in Python for saving
@@ -100,5 +134,7 @@ def gen_hybrid_image(image1, image2, cutoff_frequency):
     # gen_hybrid_image().
     # One option is to clip (also called clamp) all values below 0.0 to 0.0, 
     # and all values larger than 1.0 to 1.0.
+    hybrid_image = np.clip(hybrid_image, 0.0, 1.0)
+    print(hybrid_image.shape)
 
     return low_frequencies, high_frequencies, hybrid_image
