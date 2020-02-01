@@ -30,7 +30,7 @@ def my_imfilter(image, kernel):
 
     ##################
     # Your code here #
-    kernel = np.fliplr(kernel)
+    kernel = np.rot90(np.rot90(kernel))
     pad_y = int(np.floor((kernel_height - 1)/2))
     pad_x = int((np.floor(kernel_width - 1)/2))
     padded = None
